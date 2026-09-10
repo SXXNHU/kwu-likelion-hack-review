@@ -353,15 +353,15 @@ a {
   gap: 12px;
 }
 .step {
-  width: 33px;
-  height: 33px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: grid;
   place-items: center;
   background: transparent;
   color: #a8a8a8;
   border: 1px solid #666;
-  font: 14px Arial;
+  font: 18px Arial;
 }
 .step.active {
   background: var(--orange);
@@ -375,8 +375,8 @@ a {
   background: #555;
 }
 .board {
-  max-width: 1260px;
-  width: calc(100% - 9vw);
+  max-width: 1800px;
+  width: 80vw;
   margin: 12px auto 0;
   padding: 28px 40px 32px;
   background: radial-gradient(ellipse at 10% 0, #41474160, transparent 70%), #282e2b;
@@ -442,14 +442,17 @@ a {
 .note {
   background: var(--note-color);
   color: var(--ink);
-  min-height: 175px;
-  padding: 24px 19px 20px;
+  width: 100%;
+  max-width: 160px;
+  margin-inline: auto;
+  min-height: 88px;
+  padding: 12px 10px 10px;
   box-shadow: 3px 8px 12px #0003;
-  border-radius: 1px 1px 14px 1px;
+  border-radius: 1px 1px 7px 1px;
   transform: translateY(var(--dy, 0px)) rotate(var(--rot, 0deg));
   text-align: left;
   font-family: var(--font-handwriting);
-  font-size: 25px;
+  font-size: 13px;
   line-height: 1.23;
   position: relative;
   transition: transform 0.2s, box-shadow 0.2s;
@@ -460,10 +463,10 @@ a {
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 15px;
-  height: 15px;
+  width: 8px;
+  height: 8px;
   background: #fff3;
-  border-radius: 12px 0 12px 0;
+  border-radius: 6px 0 6px 0;
 }
 .note:hover,
 .note:focus-visible {
@@ -478,8 +481,8 @@ a {
   white-space: pre-line;
 }
 .session-footer {
-  max-width: 1260px;
-  width: calc(100% - 9vw);
+  max-width: 1800px;
+  width: 80vw;
   margin: 29px auto 0;
   display: flex;
   justify-content: space-between;
@@ -735,8 +738,8 @@ textarea {
     gap: 34px 42px;
   }
   .note {
-    min-height: 200px;
-    font-size: 28px;
+    min-height: 100px;
+    font-size: 14px;
   }
   .session-footer {
     margin-top: 36px;
@@ -763,7 +766,7 @@ textarea {
     padding-inline: 2px;
   }
   .note {
-    font-size: 23px;
+    font-size: 12px;
   }
   .session-footer {
     width: 92%;
@@ -849,8 +852,9 @@ textarea {
     width: 5px;
   }
   .step {
-    width: 27px;
-    height: 27px;
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
   }
   .board {
     width: 94%;
@@ -873,9 +877,9 @@ textarea {
     padding: 26px 7px 12px;
   }
   .note {
-    font-size: 22px;
-    padding: 20px 13px;
-    min-height: 178px;
+    font-size: 11px;
+    padding: 10px 7px;
+    min-height: 89px;
   }
   .session-footer {
     flex-direction: column;
