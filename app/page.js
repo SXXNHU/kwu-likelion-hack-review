@@ -1,67 +1,56 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import Brand from "@/components/Brand";
+import { useCurtain } from "@/components/CurtainProvider";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [sleeping, setSleeping] = useState(false);
+  const { runTransition } = useCurtain();
 
   function handleStart() {
-    if (sleeping) return;
-    setSleeping(true);
-    setTimeout(() => {
-      router.push("/board/1");
-    }, 1100);
+    runTransition(() => router.push("/board/1"));
   }
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#e77c1f]">
-      <motion.div
-        animate={{ scale: sleeping ? 1.08 : 1, filter: sleeping ? "blur(6px)" : "blur(0px)" }}
-        transition={{ duration: 1.1, ease: "easeInOut" }}
-        className="absolute inset-0"
-      >
-        <Image
-          src="/images/onboarding-bg.png"
-          alt="Animal League"
-          fill
-          priority
-          className="object-cover object-left"
-        />
-      </motion.div>
+    <section className="intro">
+      <header className="topbar">
+        <Brand />
+        <Link href="/write" className="outline">
+          ＋ 추가하기
+        </Link>
+      </header>
 
-      <motion.div
-        className="absolute inset-0 bg-black pointer-events-none"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: sleeping ? 1 : 0 }}
-        transition={{ duration: 1.1, ease: "easeInOut" }}
-      />
+      <main className="intro-main">
+        <div className="eyebrow">THE HACKATHON IS OVER. OUR STORY ISN&rsquo;T.</div>
+        <h1>
+          끝난 줄 알았지?
+          <br />
+          <em>우리의 다음</em>은 지금부터.
+        </h1>
+        <div className="hand">잠깐, 그때의 우리로 돌아가 볼까요?</div>
+        <div>
+          <button type="button" className="pill" onClick={handleStart}>
+            시작하기 <span>→</span>
+          </button>
+        </div>
+        <div className="floating-note one">
+          그때는
+          <br />
+          진짜 막막했는데…
+        </div>
+        <div className="floating-note two">
+          돌아보니,
+          <br />
+          우리 꽤 자랐네!
+        </div>
+      </main>
 
-      <Link
-        href="/write"
-        className="absolute top-6 right-6 z-10 bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-sm font-semibold px-4 py-2 rounded-full border border-white/30 transition-colors"
-      >
-        + 추가하기
-      </Link>
-
-      <div className="relative z-10 min-h-screen flex items-center justify-center">
-        <motion.button
-          type="button"
-          onClick={handleStart}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: sleeping ? 0 : 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.97 }}
-          className="bg-white text-[#a3411a] font-black text-lg sm:text-xl px-10 py-4 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.35)] tracking-wide"
-        >
-          시작하기
-        </motion.button>
-      </div>
-    </div>
+      <footer className="intro-bottom">
+        <strong>중앙해커톤, 그 다음 이야기</strong>
+        <span>4개의 팀 &nbsp; / &nbsp; 4개의 질문 &nbsp; / &nbsp; 함께 쓰는 회고</span>
+      </footer>
+    </section>
   );
 }

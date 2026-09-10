@@ -1,84 +1,182 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { Fragment, useEffect, useRef, useState } from "react";
+import { useParams, useRouter, notFound } from "next/navigation";
 import Link from "next/link";
-import Blackboard from "@/components/Blackboard";
-import NoteModal from "@/components/NoteModal";
-import { getQuestion, QUESTIONS } from "@/lib/questions";
-import { getTeamByName } from "@/lib/teams";
-import { layoutNotes } from "@/lib/postitLayout";
+import Brand from "@/components/Brand";
+import StickyNote from "@/components/StickyNote";
+import AnswerDetailDialog from "@/components/AnswerDetailDialog";
+import { QUESTIONS, getQuestion } from "@/lib/questions";
+import { TEAMS, getTeamByName } from "@/lib/teams";
+import { shuffleById, NOTE_ROTATIONS, NOTE_OFFSETS } from "@/lib/noteOrder";
+import { wait } from "@/lib/motion";
 
 export default function BoardPage() {
   const params = useParams();
-  const router = useRouter();
   const qid = Number(params.qid);
   const question = getQuestion(qid);
 
+  if (!question) {
+    notFound();
+  }
+
+  // key={qid} 로 질문이 바뀔 때마다 아래 컴포넌트를 통째로 새로 마운트한다.
+  // 칠판 입장 애니메이션이 매번 다시 재생되고, 로딩/전환 상태도 자연히 초기화된다.
+  return <BoardContent key={qid} qid={qid} question={question} />;
+}
+
+function BoardContent({ qid, question }) {
+  const router = useRouter();
+  const [status, setStatus] = useState("loading"); // loading | error | ready
   const [answers, setAnswers] = useState([]);
   const [activeNote, setActiveNote] = useState(null);
+  const [exiting, setExiting] = useState(false);
+  const busyRef = useRef(false);
+
+  function fetchAnswers() {
+    return fetch(`/api/answers?questionId=${qid}`).then((res) => {
+      if (!res.ok) throw new Error("failed");
+      return res.json();
+    });
+  }
 
   useEffect(() => {
-    if (!question) return;
     let cancelled = false;
-
-    fetch(`/api/answers?questionId=${qid}`)
-      .then((res) => res.json())
+    fetchAnswers()
       .then((data) => {
         if (cancelled) return;
         setAnswers(data.answers ?? []);
+        setStatus("ready");
       })
       .catch(() => {
-        if (!cancelled) setAnswers([]);
+        if (!cancelled) setStatus("error");
       });
-
     return () => {
       cancelled = true;
     };
-  }, [qid, question]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qid]);
 
-  if (!question) {
-    router.replace("/board/1");
-    return null;
+  function retry() {
+    setStatus("loading");
+    fetchAnswers()
+      .then((data) => {
+        setAnswers(data.answers ?? []);
+        setStatus("ready");
+      })
+      .catch(() => setStatus("error"));
   }
 
-  const enrichedNotes = answers.map((a) => {
+  async function goTo(href) {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setExiting(true);
+    await wait(560);
+    router.push(href);
+  }
+
+  const notes = shuffleById(answers).map((a) => {
     const team = getTeamByName(a.team);
-    return {
-      id: a.id,
-      team: a.team,
-      text: a.text,
-      color: team?.color ?? "#eee",
-      edge: team?.edge ?? "#999",
-    };
+    return { id: a.id, team: a.team, text: a.text, color: team?.color ?? "#eee" };
   });
 
-  const notes = layoutNotes(enrichedNotes, `board-${qid}`);
-
-  const isLast = qid >= QUESTIONS.length;
-  const nextHref = isLast ? "/" : `/board/${qid + 1}`;
-  const nextLabel = isLast ? "처음으로" : "다음 질문";
-
   return (
-    <div className="relative w-full px-4">
-      <Link
-        href="/"
-        className="fixed top-6 left-6 z-20 text-white/70 hover:text-white text-sm tracking-wide"
-      >
-        ← 처음으로
-      </Link>
+    <>
+      <header className="topbar">
+        <Brand />
+        <nav className="stepbar" aria-label="질문 이동">
+          {QUESTIONS.map((q, i) => (
+            <Fragment key={q.id}>
+              {i > 0 && <span />}
+              <button
+                type="button"
+                className={`step ${q.id === qid ? "active" : ""}`}
+                aria-label={`질문 ${q.id}`}
+                aria-current={q.id === qid ? "step" : undefined}
+                onClick={() => q.id !== qid && goTo(`/board/${q.id}`)}
+              >
+                {q.id}
+              </button>
+            </Fragment>
+          ))}
+        </nav>
+      </header>
 
-      <Blackboard question={question} notes={notes} onNoteClick={setActiveNote} />
+      <main className={`board board-enter ${exiting ? "board-exit" : ""}`}>
+        <div className="board-head">
+          <div className="board-label">
+            QUESTION 0{qid} / 0{QUESTIONS.length}
+          </div>
+          <h1>{question.short}</h1>
+          <p>{question.full}</p>
+        </div>
 
-      <Link
-        href={nextHref}
-        className="fixed bottom-8 right-8 z-20 inline-flex items-center gap-2 bg-white/90 hover:bg-white text-neutral-900 font-bold px-5 py-3 rounded-full shadow-lg transition-transform hover:scale-105"
-      >
-        {nextLabel}
-        <span aria-hidden>→</span>
-      </Link>
+        <div className="notes">
+          {status === "loading" && (
+            <div className="state-msg">
+              <p>이야기를 불러오고 있어요.</p>
+            </div>
+          )}
+          {status === "error" && (
+            <div className="state-msg">
+              <p>이야기를 불러오지 못했어요.</p>
+              <button type="button" className="outline" onClick={retry}>
+                다시 시도
+              </button>
+            </div>
+          )}
+          {status === "ready" && notes.length === 0 && (
+            <div className="empty">
+              <p>아직 도착한 이야기가 없어요.</p>
+              <Link href="/write" className="outline">
+                첫 이야기 남기기
+              </Link>
+            </div>
+          )}
+          {status === "ready" &&
+            notes.map((note, i) => (
+              <StickyNote
+                key={note.id}
+                note={note}
+                rotate={NOTE_ROTATIONS[i % NOTE_ROTATIONS.length]}
+                dy={NOTE_OFFSETS[i % NOTE_OFFSETS.length]}
+                onClick={setActiveNote}
+              />
+            ))}
+        </div>
+      </main>
 
-      <NoteModal note={activeNote} onClose={() => setActiveNote(null)} />
-    </div>
+      <footer className="session-footer">
+        <div className="legend" aria-label="팀별 포스트잇 색상">
+          {TEAMS.map((t) => (
+            <span key={t.name}>
+              <b style={{ background: t.color }} />
+              {t.name}
+            </span>
+          ))}
+        </div>
+        <div className="footer-actions">
+          {qid === 1 ? (
+            <Link href="/write" className="textbutton">
+              ＋ 이야기 추가
+            </Link>
+          ) : (
+            <button type="button" className="textbutton" onClick={() => goTo(`/board/${qid - 1}`)}>
+              ← 이전 질문
+            </button>
+          )}
+          <button
+            type="button"
+            className="pill"
+            onClick={() => goTo(qid === QUESTIONS.length ? "/" : `/board/${qid + 1}`)}
+          >
+            {qid === QUESTIONS.length ? "회고 마치기" : "다음 질문"} <span>→</span>
+          </button>
+        </div>
+      </footer>
+      <p className="hint">포스트잇을 누르면 이야기를 크게 볼 수 있어요.</p>
+
+      <AnswerDetailDialog note={activeNote} onClose={() => setActiveNote(null)} />
+    </>
   );
 }

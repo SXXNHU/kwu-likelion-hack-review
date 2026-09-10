@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getDb } from "@/lib/firebaseAdmin";
+import { listAnswers, appendAnswer } from "@/lib/githubStore";
 import { TEAMS } from "@/lib/teams";
 import { QUESTIONS } from "@/lib/questions";
 
 const VALID_QUESTION_IDS = QUESTIONS.map((q) => q.id);
 const VALID_TEAM_NAMES = TEAMS.map((t) => t.name);
-const MAX_TEXT_LENGTH = 600;
+const MAX_TEXT_LENGTH = 1000;
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -16,22 +16,10 @@ export async function GET(request) {
   }
 
   try {
-    const db = getDb();
-    const snapshot = await db
-      .collection("answers")
-      .where("questionId", "==", questionId)
-      .get();
-
-    const answers = snapshot.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        team: data.team,
-        text: data.text,
-      };
+    const answers = await listAnswers(questionId);
+    return NextResponse.json({
+      answers: answers.map((a) => ({ id: a.id, team: a.team, text: a.text })),
     });
-
-    return NextResponse.json({ answers });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "server error" }, { status: 500 });
@@ -64,15 +52,8 @@ export async function POST(request) {
   }
 
   try {
-    const db = getDb();
-    const docRef = await db.collection("answers").add({
-      questionId,
-      team,
-      text,
-      createdAt: new Date(),
-    });
-
-    return NextResponse.json({ id: docRef.id }, { status: 201 });
+    const record = await appendAnswer({ questionId, team, text });
+    return NextResponse.json({ id: record.id }, { status: 201 });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "server error" }, { status: 500 });

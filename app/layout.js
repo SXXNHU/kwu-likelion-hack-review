@@ -1,30 +1,17 @@
-import { Noto_Sans_KR, Gaegu } from "next/font/google";
 import "./globals.css";
-
-const notoSansKr = Noto_Sans_KR({
-  variable: "--font-body",
-  subsets: ["latin", "korean"],
-  weight: ["400", "500", "700", "900"],
-});
-
-const gaegu = Gaegu({
-  variable: "--font-handwriting",
-  subsets: ["latin", "korean"],
-  weight: ["400", "700"],
-});
+import { CurtainProvider } from "@/components/CurtainProvider";
 
 export const metadata = {
-  title: "ANIMAL LEAGUE 회고 세션",
+  title: "AFTER HACK — 우리의 다음을 위한 회고",
   description: "멋쟁이사자처럼 중앙해커톤 회고 세션",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html
-      lang="ko"
-      className={`${notoSansKr.variable} ${gaegu.variable} h-full antialiased`}
-    >
-      <body className="min-h-full">{children}</body>
+    <html lang="ko">
+      <body>
+        <CurtainProvider>{children}</CurtainProvider>
+      </body>
     </html>
   );
 }
