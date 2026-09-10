@@ -2,10 +2,11 @@
 
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useParams, useRouter, notFound } from "next/navigation";
-import Link from "next/link";
 import Brand from "@/components/Brand";
 import StickyNote from "@/components/StickyNote";
 import AnswerDetailDialog from "@/components/AnswerDetailDialog";
+import AnswerFormDialog from "@/components/AnswerFormDialog";
+import Toast from "@/components/Toast";
 import { QUESTIONS, getQuestion } from "@/lib/questions";
 import { TEAMS, getTeamByName } from "@/lib/teams";
 import { shuffleById, NOTE_ROTATIONS, NOTE_OFFSETS } from "@/lib/noteOrder";
@@ -30,6 +31,8 @@ function BoardContent({ qid, question }) {
   const [status, setStatus] = useState("loading"); // loading | error | ready
   const [answers, setAnswers] = useState([]);
   const [activeNote, setActiveNote] = useState(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   const [exiting, setExiting] = useState(false);
   const busyRef = useRef(false);
 
@@ -128,9 +131,9 @@ function BoardContent({ qid, question }) {
           {status === "ready" && notes.length === 0 && (
             <div className="empty">
               <p>아직 도착한 이야기가 없어요.</p>
-              <Link href="/write" className="outline">
+              <button type="button" className="outline" onClick={() => setAddOpen(true)}>
                 첫 이야기 남기기
-              </Link>
+              </button>
             </div>
           )}
           {status === "ready" &&
@@ -156,15 +159,9 @@ function BoardContent({ qid, question }) {
           ))}
         </div>
         <div className="footer-actions">
-          {qid === 1 ? (
-            <Link href="/write" className="textbutton">
-              ＋ 이야기 추가
-            </Link>
-          ) : (
-            <button type="button" className="textbutton" onClick={() => goTo(`/board/${qid - 1}`)}>
-              ← 이전 질문
-            </button>
-          )}
+          <button type="button" className="textbutton" onClick={() => setAddOpen(true)}>
+            ＋ 이야기 추가
+          </button>
           <button
             type="button"
             className="pill"
@@ -177,6 +174,15 @@ function BoardContent({ qid, question }) {
       <p className="hint">포스트잇을 누르면 이야기를 크게 볼 수 있어요.</p>
 
       <AnswerDetailDialog note={activeNote} onClose={() => setActiveNote(null)} />
+      <AnswerFormDialog
+        question={addOpen ? question : null}
+        onClose={() => setAddOpen(false)}
+        onSaved={(message) => {
+          setToastMessage(message);
+          retry();
+        }}
+      />
+      <Toast message={toastMessage} onDismiss={() => setToastMessage("")} />
     </>
   );
 }
