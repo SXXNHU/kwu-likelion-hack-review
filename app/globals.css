@@ -377,6 +377,7 @@ a {
 .board {
   max-width: 1800px;
   width: 80vw;
+  min-height: calc(100svh - 260px);
   margin: 12px auto 0;
   padding: 28px 40px 32px;
   background: radial-gradient(ellipse at 10% 0, #41474160, transparent 70%), #282e2b;
@@ -385,6 +386,8 @@ a {
   box-shadow: 0 0 0 1px #8a7361, 0 18px 50px #0006, inset 0 0 55px #0003;
   position: relative;
   transform-origin: top center;
+  display: flex;
+  flex-direction: column;
 }
 .board:after {
   content: "";
@@ -435,9 +438,11 @@ a {
 .notes {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-content: start;
   gap: 28px 32px;
   padding: 30px 12px 16px;
   align-items: start;
+  flex: 1 1 auto;
 }
 .note {
   background: var(--note-color);
