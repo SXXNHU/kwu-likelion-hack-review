@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+  --font-handwriting: var(--font-handwriting);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), "Malgun Gothic", sans-serif;
+  overflow-x: hidden;
+}
+
+.font-handwriting {
+  font-family: var(--font-handwriting), "Malgun Gothic", sans-serif;
+}
+
+@keyframes note-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(var(--note-rotate, 0deg));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(var(--note-rotate, 0deg));
+  }
+}
