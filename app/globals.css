@@ -809,8 +809,8 @@ textarea {
     padding-bottom: 170px;
   }
   .intro h1 {
-    font-size: 47px;
-    letter-spacing: -2.5px;
+    font-size: 30px;
+    letter-spacing: -1.5px;
   }
   .intro .hand {
     font-size: 25px;
@@ -911,6 +911,12 @@ textarea {
   }
   .hint {
     margin-bottom: 24px;
+  }
+}
+@media (max-width: 340px) {
+  .intro h1 {
+    font-size: 25px;
+    letter-spacing: -1px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
