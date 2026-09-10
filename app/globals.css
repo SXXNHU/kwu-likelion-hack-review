@@ -444,6 +444,10 @@ a {
   align-items: start;
   flex: 1 1 auto;
 }
+.board-add {
+  text-align: center;
+  padding-top: 20px;
+}
 .note {
   background: var(--note-color);
   color: var(--ink);

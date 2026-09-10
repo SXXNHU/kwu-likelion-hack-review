@@ -147,6 +147,12 @@ function BoardContent({ qid, question }) {
               />
             ))}
         </div>
+
+        <div className="board-add">
+          <button type="button" className="outline" onClick={() => setAddOpen(true)}>
+            ＋ 이야기 추가
+          </button>
+        </div>
       </main>
 
       <footer className="session-footer">
@@ -159,9 +165,11 @@ function BoardContent({ qid, question }) {
           ))}
         </div>
         <div className="footer-actions">
-          <button type="button" className="textbutton" onClick={() => setAddOpen(true)}>
-            ＋ 이야기 추가
-          </button>
+          {qid > 1 && (
+            <button type="button" className="textbutton" onClick={() => goTo(`/board/${qid - 1}`)}>
+              ← 이전 질문
+            </button>
+          )}
           <button
             type="button"
             className="pill"
